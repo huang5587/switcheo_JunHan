@@ -1,0 +1,12 @@
+syntax = "proto3";
+package fruits.fruits;
+
+import "gogoproto/gogo.proto";
+import "fruits/fruits/params.proto";
+
+option go_package = "fruits/x/fruits/types";
+
+// GenesisState defines the fruits module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+}

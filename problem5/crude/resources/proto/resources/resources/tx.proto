@@ -1,7 +1,0 @@
-syntax = "proto3";
-package resources.resources;
-
-option go_package = "resources/x/resources/types";
-
-// Msg defines the Msg service.
-service Msg {}
