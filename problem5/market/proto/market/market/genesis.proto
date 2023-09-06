@@ -1,0 +1,12 @@
+syntax = "proto3";
+package market.market;
+
+import "gogoproto/gogo.proto";
+import "market/market/params.proto";
+
+option go_package = "market/x/market/types";
+
+// GenesisState defines the market module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+}

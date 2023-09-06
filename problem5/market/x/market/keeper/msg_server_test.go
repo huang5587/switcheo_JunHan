@@ -5,12 +5,12 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-    "github.com/crude/x/crude/types"
-    "github.com/crude/x/crude/keeper"
-    keepertest "github.com/crude/testutil/keeper"
+	keepertest "market/testutil/keeper"
+	"market/x/market/keeper"
+	"market/x/market/types"
 )
 
 func setupMsgServer(t testing.TB) (types.MsgServer, context.Context) {
-	k, ctx := keepertest.CrudeKeeper(t)
+	k, ctx := keepertest.MarketKeeper(t)
 	return keeper.NewMsgServerImpl(*k), sdk.WrapSDKContext(ctx)
 }
