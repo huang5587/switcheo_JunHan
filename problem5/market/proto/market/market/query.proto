@@ -1,26 +1,58 @@
 syntax = "proto3";
+
 package market.market;
 
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "market/market/params.proto";
+import "market/market/apples.proto";
 
 option go_package = "market/x/market/types";
 
 // Query defines the gRPC querier service.
 service Query {
+  
   // Parameters queries the parameters of the module.
-  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+  rpc Params (QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/market/market/params";
+  
+  }
+  
+  // Queries a list of Apples items.
+  rpc Apples    (QueryGetApplesRequest) returns (QueryGetApplesResponse) {
+    option (google.api.http).get = "/market/market/apples/{id}";
+  
+  }
+  rpc ApplesAll (QueryAllApplesRequest) returns (QueryAllApplesResponse) {
+    option (google.api.http).get = "/market/market/apples";
+  
   }
 }
-
 // QueryParamsRequest is request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 
 // QueryParamsResponse is response type for the Query/Params RPC method.
 message QueryParamsResponse {
+  
   // params holds all the parameters of this module.
   Params params = 1 [(gogoproto.nullable) = false];
 }
+
+message QueryGetApplesRequest {
+  uint64 id = 1;
+}
+
+message QueryGetApplesResponse {
+  Apples Apples = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllApplesRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllApplesResponse {
+  repeated Apples                                 Apples     = 1 [(gogoproto.nullable) = false];
+           cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+

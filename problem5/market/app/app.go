@@ -106,6 +106,9 @@ import (
 	marketmodule "market/x/market"
 	marketmodulekeeper "market/x/market/keeper"
 	marketmoduletypes "market/x/market/types"
+	mktmodule "market/x/mkt"
+	mktmodulekeeper "market/x/mkt/keeper"
+	mktmoduletypes "market/x/mkt/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	appparams "market/app/params"
@@ -165,6 +168,7 @@ var (
 		ica.AppModuleBasic{},
 		vesting.AppModuleBasic{},
 		marketmodule.AppModuleBasic{},
+		mktmodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -238,7 +242,9 @@ type App struct {
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
 	ScopedICAHostKeeper  capabilitykeeper.ScopedKeeper
 
-	MarketKeeper marketmodulekeeper.Keeper
+	MarketKeeper    marketmodulekeeper.Keeper
+	ScopedMktKeeper capabilitykeeper.ScopedKeeper
+	MktKeeper       mktmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// mm is the module manager
@@ -284,6 +290,7 @@ func New(
 		ibctransfertypes.StoreKey, icahosttypes.StoreKey, capabilitytypes.StoreKey, group.StoreKey,
 		icacontrollertypes.StoreKey,
 		marketmoduletypes.StoreKey,
+		mktmoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -503,6 +510,20 @@ func New(
 	)
 	marketModule := marketmodule.NewAppModule(appCodec, app.MarketKeeper, app.AccountKeeper, app.BankKeeper)
 
+	scopedMktKeeper := app.CapabilityKeeper.ScopeToModule(mktmoduletypes.ModuleName)
+	app.ScopedMktKeeper = scopedMktKeeper
+	app.MktKeeper = *mktmodulekeeper.NewKeeper(
+		appCodec,
+		keys[mktmoduletypes.StoreKey],
+		keys[mktmoduletypes.MemStoreKey],
+		app.GetSubspace(mktmoduletypes.ModuleName),
+		app.IBCKeeper.ChannelKeeper,
+		&app.IBCKeeper.PortKeeper,
+		scopedMktKeeper,
+	)
+	mktModule := mktmodule.NewAppModule(appCodec, app.MktKeeper, app.AccountKeeper, app.BankKeeper)
+
+	mktIBCModule := mktmodule.NewIBCModule(app.MktKeeper)
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
 	/**** IBC Routing ****/
@@ -514,6 +535,7 @@ func New(
 	ibcRouter := ibcporttypes.NewRouter()
 	ibcRouter.AddRoute(icahosttypes.SubModuleName, icaHostIBCModule).
 		AddRoute(ibctransfertypes.ModuleName, transferIBCModule)
+	ibcRouter.AddRoute(mktmoduletypes.ModuleName, mktIBCModule)
 	// this line is used by starport scaffolding # ibc/app/router
 	app.IBCKeeper.SetRouter(ibcRouter)
 
@@ -569,6 +591,7 @@ func New(
 		transferModule,
 		icaModule,
 		marketModule,
+		mktModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
@@ -599,6 +622,7 @@ func New(
 		paramstypes.ModuleName,
 		vestingtypes.ModuleName,
 		marketmoduletypes.ModuleName,
+		mktmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	)
 
@@ -624,6 +648,7 @@ func New(
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		marketmoduletypes.ModuleName,
+		mktmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	)
 
@@ -654,6 +679,7 @@ func New(
 		upgradetypes.ModuleName,
 		vestingtypes.ModuleName,
 		marketmoduletypes.ModuleName,
+		mktmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -684,6 +710,7 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
 		marketModule,
+		mktModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 	app.sm.RegisterStoreDecoders()
@@ -889,6 +916,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(icacontrollertypes.SubModuleName)
 	paramsKeeper.Subspace(icahosttypes.SubModuleName)
 	paramsKeeper.Subspace(marketmoduletypes.ModuleName)
+	paramsKeeper.Subspace(mktmoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper
