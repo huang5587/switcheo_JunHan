@@ -14,6 +14,7 @@ func sum_to_n_a(n int) int {
 }
 
 func sum_to_n_b(n int, numWorkers int) int {
+	//sums numbers 0 to n using concurrency, with numWorkers amount of concurrent operations.
 	resultChan := make(chan int)
 	chunkSize := n / numWorkers
 
@@ -42,15 +43,18 @@ func sum_to_n_b(n int, numWorkers int) int {
 }
 
 func sum_to_n_c(n int) int {
-	// functional progamming?
-	print(n)
-	return 0
+	sum := 0
+	for i := 0; i <= n; i++ {
+		sum += i
+	}
+	return sum
 }
 
 func main() {
 	n := 100
 
-	fmt.Println("func A: ", sum_to_n_a(n))
-	fmt.Println("func B: ", sum_to_n_b(n, rand.Intn(12)))
-	sum_to_n_c(n)
+	fmt.Println("Recursive method: ", sum_to_n_a(n))
+	fmt.Println("Concurrent method: ", sum_to_n_b(n, rand.Intn(12)))
+	fmt.Println("Iterative method: ", sum_to_n_c(n))
+
 }
